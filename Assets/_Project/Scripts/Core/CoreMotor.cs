@@ -39,6 +39,8 @@ public class CoreMotor : MonoBehaviour
     private bool touchingWall;
     private bool guarding;
 
+    public event System.Action<Vector2, float> WallImpacted;
+
     public Vector2 Velocity => rb.velocity;
     public Vector2 PreCollisionVelocity => velocityBeforePhysics;
     public float Speed => rb.velocity.magnitude;
@@ -58,6 +60,7 @@ public class CoreMotor : MonoBehaviour
         {
             float currentAcceleration = guarding ? acceleration * guardAccelerationMultiplier : acceleration;
             float currentSteering = guarding ? steeringStrength * guardSteeringMultiplier : steeringStrength;
+
             if (Speed < cruiseSpeed) rb.AddForce(effectiveInput * currentAcceleration, ForceMode2D.Force);
             ApplySteering(effectiveInput, currentSteering);
         }
@@ -69,9 +72,17 @@ public class CoreMotor : MonoBehaviour
     }
 
     public void SetMoveInput(Vector2 input) => moveInput = Vector2.ClampMagnitude(input, 1f);
+
     public void RequestBoost() => TryBoost();
+
     public void SetGuarding(bool value) => guarding = value;
+
     public void ApplyImpulse(Vector2 impulse) => rb.AddForce(impulse, ForceMode2D.Impulse);
+
+    public void ScaleVelocity(float multiplier)
+    {
+        rb.velocity *= Mathf.Max(0f, multiplier);
+    }
 
     public void ApplyCoreCollisionVelocity(Vector2 velocity, float controlLockTime)
     {
@@ -86,12 +97,14 @@ public class CoreMotor : MonoBehaviour
 
         float intoWall = Vector2.Dot(input, lastWallNormal);
         if (intoWall < 0f) input -= lastWallNormal * intoWall;
+
         return input.sqrMagnitude > 0.001f ? input.normalized : Vector2.zero;
     }
 
     private void ApplySteering(Vector2 direction, float strength)
     {
         if (Speed < 0.1f) return;
+
         Vector2 targetVelocity = direction * Speed;
         rb.velocity = Vector2.Lerp(rb.velocity, targetVelocity, strength * Time.fixedDeltaTime);
     }
@@ -129,13 +142,18 @@ public class CoreMotor : MonoBehaviour
         touchingWall = true;
         wallControlUnlockTime = Time.time + wallControlLockTime;
 
-        if (Vector2.Dot(velocityBeforePhysics, lastWallNormal) >= 0f) return;
+        float impactSpeed = Mathf.Max(0f, -Vector2.Dot(velocityBeforePhysics, lastWallNormal));
+        if (impactSpeed <= 0f) return;
+
         rb.velocity = Vector2.Reflect(velocityBeforePhysics, lastWallNormal) * wallBounceRetention;
+
+        WallImpacted?.Invoke(lastWallNormal, impactSpeed);
     }
 
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (!collision.collider.CompareTag("Wall") || collision.contactCount == 0) return;
+
         touchingWall = true;
         lastWallNormal = collision.GetContact(0).normal;
     }

@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(CoreHealth))]
 [RequireComponent(typeof(CoreGuard))]
 [RequireComponent(typeof(CoreElementStorage))]
+[RequireComponent(typeof(CoreStatusController))]
 public class CoreCombat : MonoBehaviour
 {
     [Header("碰撞伤害")]
@@ -17,11 +18,13 @@ public class CoreCombat : MonoBehaviour
     private CoreHealth health;
     private CoreGuard guard;
     private CoreElementStorage elementStorage;
+    private CoreStatusController status;
 
     public CoreMotor Motor => motor;
     public CoreHealth Health => health;
     public CoreGuard Guard => guard;
     public CoreElementStorage ElementStorage => elementStorage;
+    public CoreStatusController Status => status;
 
     private void Awake()
     {
@@ -29,6 +32,7 @@ public class CoreCombat : MonoBehaviour
         health = GetComponent<CoreHealth>();
         guard = GetComponent<CoreGuard>();
         elementStorage = GetComponent<CoreElementStorage>();
+        status = GetComponent<CoreStatusController>();
     }
 
     public float CalculateDamage(float attackSpeed)
@@ -45,14 +49,18 @@ public class CoreCombat : MonoBehaviour
 
     public void ConsumeReaction(ReactionDefinition reaction)
     {
-        if (reaction != null) elementStorage.Clear();
+        if (reaction == null) return;
+        elementStorage.Clear();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         CoreCombat other = collision.collider.GetComponent<CoreCombat>();
         if (other == null || other == this) return;
+
+        // 两个 Core 都会收到 OnCollisionEnter2D，只让其中一个负责结算。
         if (GetInstanceID() > other.GetInstanceID()) return;
+
         ImpactResolver.Resolve(this, other, collision);
     }
 }

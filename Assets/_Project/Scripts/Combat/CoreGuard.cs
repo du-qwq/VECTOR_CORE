@@ -67,6 +67,12 @@ public class CoreGuard : MonoBehaviour
         return perfect ? 0f : coreDamage * guardedCoreDamageMultiplier;
     }
 
+    public void DamageGuard(float damage)
+    {
+        if (damage <= 0f || broken) return;
+        ApplyGuardDamage(damage);
+    }
+    
     private void ApplyGuardDamage(float damage)
     {
         currentGuard = Mathf.Max(0f, currentGuard - damage);

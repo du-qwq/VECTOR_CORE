@@ -21,11 +21,13 @@ public static class ImpactResolver
         if (lastImpactTimes.TryGetValue(pairKey, out float lastTime) && Time.time - lastTime < ImpactCooldown) return;
 
         Vector2 normal = ((Vector2)b.transform.position - (Vector2)a.transform.position).normalized;
+
         Vector2 velocityA = a.Motor.PreCollisionVelocity;
         Vector2 velocityB = b.Motor.PreCollisionVelocity;
 
         float velocityANormal = Vector2.Dot(velocityA, normal);
         float velocityBNormal = Vector2.Dot(velocityB, normal);
+
         float closingSpeed = velocityANormal - velocityBNormal;
         if (closingSpeed < MinClosingSpeed) return;
 
@@ -34,6 +36,7 @@ public static class ImpactResolver
 
         float baseDamageToB = a.CalculateDamage(attackSpeedA);
         float baseDamageToA = b.CalculateDamage(attackSpeedB);
+
         if (baseDamageToA <= 0f && baseDamageToB <= 0f) return;
 
         ReactionDefinition reactionA = baseDamageToB > 0f ? a.GetLoadedReaction() : null;
@@ -47,6 +50,7 @@ public static class ImpactResolver
 
         bool guardingA = a.Guard.IsGuarding;
         bool guardingB = b.Guard.IsGuarding;
+
         bool perfectA = guardingA && a.Guard.IsPerfectGuard && baseDamageToA > 0f;
         bool perfectB = guardingB && b.Guard.IsPerfectGuard && baseDamageToB > 0f;
 
@@ -60,13 +64,19 @@ public static class ImpactResolver
 
         if (reactionA != null)
         {
+            if (!perfectB) ReactionEffectResolver.Apply(a, b, reactionA);
+
             Debug.Log($"{a.name} → {reactionA.ReactionName}");
+
             a.ConsumeReaction(reactionA);
         }
 
         if (reactionB != null)
         {
+            if (!perfectA) ReactionEffectResolver.Apply(b, a, reactionB);
+
             Debug.Log($"{b.name} → {reactionB.ReactionName}");
+
             b.ConsumeReaction(reactionB);
         }
 
