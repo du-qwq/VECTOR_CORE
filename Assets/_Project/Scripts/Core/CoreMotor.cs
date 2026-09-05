@@ -31,12 +31,18 @@ public class CoreMotor : MonoBehaviour
     private float wallControlUnlockTime;
     private float nextBoostTime;
     private bool touchingWall;
+    private float controlLockedUntil;
 
     public Vector2 Velocity => rb.velocity;
     public float Speed => rb.velocity.magnitude;
     public float NormalizedMomentum => Mathf.Clamp01(Speed / maxSpeed);
     public bool IsHighMomentum => NormalizedMomentum >= highMomentumThreshold;
     public bool CanBoost => Time.time >= nextBoostTime;
+    public Vector2 PreCollisionVelocity => velocityBeforePhysics;
+    public void SetMoveInput(Vector2 input) => moveInput = Vector2.ClampMagnitude(input, 1f);
+    public void RequestBoost() => TryBoost();
+    public void ApplyImpulse(Vector2 impulse) => rb.AddForce(impulse, ForceMode2D.Impulse);
+    public bool IsControlLocked => Time.time < controlLockedUntil;
 
     private void Awake()
     {
@@ -45,15 +51,14 @@ public class CoreMotor : MonoBehaviour
 
     private void Update()
     {
-        moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
-        if (Input.GetKeyDown(KeyCode.LeftShift)) TryBoost();
+
     }
 
     private void FixedUpdate()
     {
-        Vector2 effectiveInput = GetEffectiveInput();
+        Vector2 effectiveInput = IsControlLocked ? Vector2.zero : GetEffectiveInput();
 
-        rb.drag = moveInput.sqrMagnitude > 0.01f ? movingDrag : idleDrag;
+        rb.drag = IsControlLocked ? movingDrag : (effectiveInput.sqrMagnitude > 0.01f ? movingDrag : idleDrag);
 
         if (effectiveInput.sqrMagnitude > 0.01f)
         {
@@ -85,7 +90,7 @@ public class CoreMotor : MonoBehaviour
 
     private void TryBoost()
     {
-        if (!CanBoost) return;
+        if (!CanBoost || IsControlLocked) return;
 
         Vector2 boostDirection = moveInput.sqrMagnitude > 0.01f ? moveInput : rb.velocity.normalized;
         if (touchingWall || Time.time < wallControlUnlockTime)
@@ -107,6 +112,12 @@ public class CoreMotor : MonoBehaviour
         rb.velocity = rb.velocity.normalized * maxSpeed;
     }
 
+    public void ApplyCoreCollisionVelocity(Vector2 velocity, float controlLockTime)
+    {
+        rb.velocity = Vector2.ClampMagnitude(velocity, maxSpeed);
+        controlLockedUntil = Mathf.Max(controlLockedUntil, Time.time + controlLockTime);
+    }
+    
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.collider.CompareTag("Wall") || collision.contactCount == 0) return;
