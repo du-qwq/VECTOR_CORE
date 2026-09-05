@@ -82,7 +82,7 @@ public class ImpactVFXInstance : MonoBehaviour
 
     public void Play(Vector2 position, Vector2 normal, float impact01, bool hitCore)
     {
-        transform.position = new Vector3(position.x, position.y, 0.05f);
+        transform.position = new Vector3(position.x, position.y, -0.01f);
 
         intensity = Mathf.Clamp01(impact01);
         coreImpact = hitCore;
