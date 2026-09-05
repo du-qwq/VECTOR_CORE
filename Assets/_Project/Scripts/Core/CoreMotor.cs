@@ -40,6 +40,7 @@ public class CoreMotor : MonoBehaviour
     private bool guarding;
 
     public event System.Action<Vector2, float> WallImpacted;
+    public event System.Action Boosted;
 
     public Vector2 Velocity => rb.velocity;
     public Vector2 PreCollisionVelocity => velocityBeforePhysics;
@@ -126,6 +127,8 @@ public class CoreMotor : MonoBehaviour
         rb.AddForce(boostDirection.normalized * boostImpulse, ForceMode2D.Impulse);
         ClampSpeed();
         nextBoostTime = Time.time + boostCooldown;
+
+        Boosted?.Invoke();
     }
 
     private void ClampSpeed()

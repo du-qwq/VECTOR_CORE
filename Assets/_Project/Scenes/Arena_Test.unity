@@ -1576,7 +1576,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 2.65
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2659,6 +2659,10 @@ MonoBehaviour:
   minDirectionSpeed: 0.3
   directionSmoothSpeed: 12
   momentumSmoothSpeed: 6
+  rotorIdleSpeed: 28
+  rotorMaxSpeed: 90
+  boostVisualDuration: 0.18
+  boostFlashPower: 2
   thermalColor: {r: 1, g: 0.396, b: 0.282, a: 1}
   fluidColor: {r: 0.196, g: 0.824, b: 0.706, a: 1}
   voltColor: {r: 1, g: 0.831, b: 0.278, a: 1}

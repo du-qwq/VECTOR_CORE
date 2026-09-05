@@ -85,10 +85,16 @@ Material:
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BoostFlash: 0
+    - _BoostOuterOffset: 0.055
+    - _BoostWave: 0
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _CoreOutlineRadius: 0.31
+    - _CoreOutlineWidth: 0.022
+    - _CorePulseSpeed: 2
+    - _CorePulseStrength: 0.045
     - _CoreRadius: 0.22
     - _Cull: 2
     - _Cutoff: 0.5
@@ -97,28 +103,48 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _ForwardMarkerSize: 0.06
+    - _ForwardMarkerSize: 0.133
     - _GapAngle: 32
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HaloStrength: 0.055
+    - _MarkerDistance: 0.87
     - _Metallic: 0
     - _MiddleRadius: 0.5
+    - _MiddleScanAngle: 28
     - _MiddleWidth: 0.012
     - _Momentum: 0
     - _OcclusionStrength: 1
+    - _OuterDriftAngle: 2.5
+    - _OuterDriftSpeed: 1.1
+    - _OuterFlowSpeed: 2.2
+    - _OuterFlowStrength: 0.35
+    - _OuterPulseSpeed: 1.4
+    - _OuterPulseStrength: 0.008
     - _OuterRadius: 0.78
-    - _OuterSegmentAngle: 48
+    - _OuterRotationPhase: 0
+    - _OuterSegmentAngle: 42.6
     - _OuterWidth: 0.1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _ScanSpeed: 0.8
+    - _RotorRadius: 0.39
+    - _RotorRotationPhase: 0
+    - _RotorSegmentAngle: 34
+    - _RotorWidth: 0.045
+    - _ScanSpeed: 1.2
     - _SlotAActive: 0
     - _SlotAngle: 28
     - _SlotBActive: 0
     - _SlotBorderWidth: 0.135
+    - _SlotEndBorderAngle: 1.35
+    - _SlotPulseSpeed: 3
+    - _SlotPulseStrength: 0.2
     - _SlotRadius: 0.78
+    - _SlotScanSpeed: 1.25
+    - _SlotScanStrength: 1.35
+    - _SlotScanWidth: 0.25
     - _SlotWidth: 0.1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
@@ -136,6 +162,9 @@ Material:
     - _EmptySlotColor: {r: 0.15999997, g: 0.24999997, b: 0.30999997, a: 1}
     - _ForwardDir: {r: 0, g: 1, b: 0, a: 0}
     - _InnerColor: {r: 0.85, g: 0.97, b: 1, a: 1}
+    - _MarkerColor: {r: 0.42, g: 0.93, b: 1, a: 1}
+    - _OuterSegmentColor: {r: 0.42, g: 0.93, b: 1, a: 1}
+    - _RotorColor: {r: 0.25, g: 0.78, b: 0.92, a: 1}
     - _SlotAColor: {r: 1, g: 0.4, b: 0.28, a: 1}
     - _SlotBColor: {r: 1, g: 0.83, b: 0.28, a: 1}
     - _SlotBorderColor: {r: 0.15999997, g: 0.37999994, b: 0.4699999, a: 1}
