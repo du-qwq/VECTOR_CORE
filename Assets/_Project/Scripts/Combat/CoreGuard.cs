@@ -6,7 +6,7 @@ public class CoreGuard : MonoBehaviour
     [Header("Guard")]
     [SerializeField] private float maxGuard = 100f;
     [Range(0f, 1f)] [SerializeField] private float guardedCoreDamageMultiplier = 0.3f;
-    [SerializeField] private float guardDamageMultiplier = 0.9f;
+    [SerializeField] private float baseGuardDamageMultiplier = 0.9f;
 
     [Header("Perfect Guard")]
     [SerializeField] private float perfectGuardWindow = 0.12f;
@@ -27,7 +27,7 @@ public class CoreGuard : MonoBehaviour
     private bool broken;
 
     public float CurrentGuard => currentGuard;
-    public float NormalizedGuard => currentGuard / maxGuard;
+    public float NormalizedGuard => maxGuard <= 0f ? 0f : currentGuard / maxGuard;
     public bool IsBroken => broken;
     public bool IsGuarding => guardInput && !broken;
     public bool IsPerfectGuard => IsGuarding && Time.time - guardStartTime <= perfectGuardWindow;
@@ -47,7 +47,6 @@ public class CoreGuard : MonoBehaviour
         }
 
         if (!IsGuarding && !broken && Time.time >= rechargeUnlockTime) currentGuard = Mathf.MoveTowards(currentGuard, maxGuard, rechargeRate * Time.deltaTime);
-
         motor.SetGuarding(IsGuarding);
     }
 
@@ -57,13 +56,15 @@ public class CoreGuard : MonoBehaviour
         guardInput = active;
     }
 
-    public float ResolveIncomingDamage(float damage, bool perfect)
+    public float ResolveIncomingImpact(float coreDamage, float guardDamage, bool perfect)
     {
-        if (damage <= 0f) return 0f;
-        if (!IsGuarding) return damage;
+        if (coreDamage <= 0f && guardDamage <= 0f) return 0f;
+        if (!IsGuarding) return coreDamage;
 
-        ApplyGuardDamage(damage * (perfect ? perfectGuardCostMultiplier : guardDamageMultiplier));
-        return perfect ? 0f : damage * guardedCoreDamageMultiplier;
+        float guardCost = guardDamage * baseGuardDamageMultiplier * (perfect ? perfectGuardCostMultiplier : 1f);
+        ApplyGuardDamage(guardCost);
+
+        return perfect ? 0f : coreDamage * guardedCoreDamageMultiplier;
     }
 
     private void ApplyGuardDamage(float damage)

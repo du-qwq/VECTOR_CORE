@@ -1398,6 +1398,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minAttackSpeed: 2.5
   damagePerSpeed: 4
+  reactionDatabase: {fileID: 11400000, guid: cdf6a6469aeeffa46b37d94117c7e86c, type: 2}
 --- !u!114 &1448939436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1412,7 +1413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxGuard: 100
   guardedCoreDamageMultiplier: 0.3
-  guardDamageMultiplier: 0.9
+  baseGuardDamageMultiplier: 0.9
   perfectGuardWindow: 0.12
   perfectGuardCostMultiplier: 0.35
   rechargeDelay: 1
@@ -2065,6 +2066,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minAttackSpeed: 2.5
   damagePerSpeed: 4
+  reactionDatabase: {fileID: 11400000, guid: cdf6a6469aeeffa46b37d94117c7e86c, type: 2}
 --- !u!114 &1644674135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2079,7 +2081,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxGuard: 100
   guardedCoreDamageMultiplier: 0.3
-  guardDamageMultiplier: 0.9
+  baseGuardDamageMultiplier: 0.9
   perfectGuardWindow: 0.12
   perfectGuardCostMultiplier: 0.35
   rechargeDelay: 1

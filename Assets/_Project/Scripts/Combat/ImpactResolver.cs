@@ -32,22 +32,43 @@ public static class ImpactResolver
         float attackSpeedA = Mathf.Max(0f, velocityANormal);
         float attackSpeedB = Mathf.Max(0f, -velocityBNormal);
 
-        float rawDamageToB = a.CalculateDamage(attackSpeedA);
-        float rawDamageToA = b.CalculateDamage(attackSpeedB);
-        if (rawDamageToA <= 0f && rawDamageToB <= 0f) return;
+        float baseDamageToB = a.CalculateDamage(attackSpeedA);
+        float baseDamageToA = b.CalculateDamage(attackSpeedB);
+        if (baseDamageToA <= 0f && baseDamageToB <= 0f) return;
+
+        ReactionDefinition reactionA = baseDamageToB > 0f ? a.GetLoadedReaction() : null;
+        ReactionDefinition reactionB = baseDamageToA > 0f ? b.GetLoadedReaction() : null;
+
+        float rawCoreDamageToB = baseDamageToB * (reactionA != null ? reactionA.CoreDamageMultiplier : 1f);
+        float rawGuardDamageToB = baseDamageToB * (reactionA != null ? reactionA.GuardDamageMultiplier : 1f);
+
+        float rawCoreDamageToA = baseDamageToA * (reactionB != null ? reactionB.CoreDamageMultiplier : 1f);
+        float rawGuardDamageToA = baseDamageToA * (reactionB != null ? reactionB.GuardDamageMultiplier : 1f);
 
         bool guardingA = a.Guard.IsGuarding;
         bool guardingB = b.Guard.IsGuarding;
-        bool perfectA = guardingA && a.Guard.IsPerfectGuard && rawDamageToA > 0f;
-        bool perfectB = guardingB && b.Guard.IsPerfectGuard && rawDamageToB > 0f;
+        bool perfectA = guardingA && a.Guard.IsPerfectGuard && baseDamageToA > 0f;
+        bool perfectB = guardingB && b.Guard.IsPerfectGuard && baseDamageToB > 0f;
 
-        float damageToA = a.Guard.ResolveIncomingDamage(rawDamageToA, perfectA);
-        float damageToB = b.Guard.ResolveIncomingDamage(rawDamageToB, perfectB);
+        float damageToA = a.Guard.ResolveIncomingImpact(rawCoreDamageToA, rawGuardDamageToA, perfectA);
+        float damageToB = b.Guard.ResolveIncomingImpact(rawCoreDamageToB, rawGuardDamageToB, perfectB);
 
         lastImpactTimes[pairKey] = Time.time;
 
         if (damageToA > 0f) a.Health.TakeDamage(damageToA);
         if (damageToB > 0f) b.Health.TakeDamage(damageToB);
+
+        if (reactionA != null)
+        {
+            Debug.Log($"{a.name} → {reactionA.ReactionName}");
+            a.ConsumeReaction(reactionA);
+        }
+
+        if (reactionB != null)
+        {
+            Debug.Log($"{b.name} → {reactionB.ReactionName}");
+            b.ConsumeReaction(reactionB);
+        }
 
         ResolveVelocity(a, b, velocityA, velocityB, normal, velocityANormal, velocityBNormal, attackSpeedA, attackSpeedB, guardingA, guardingB, perfectA, perfectB);
 
