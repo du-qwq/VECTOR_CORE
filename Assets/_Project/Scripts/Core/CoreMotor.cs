@@ -43,6 +43,8 @@ public class CoreMotor : MonoBehaviour
     public event System.Action Boosted;
 
     public Vector2 Velocity => rb.velocity;
+    public Vector2 MoveInput => moveInput;
+    public bool IsGuarding => guarding;
     public Vector2 PreCollisionVelocity => velocityBeforePhysics;
     public float Speed => rb.velocity.magnitude;
     public float NormalizedMomentum => Mathf.Clamp01(Speed / maxSpeed);
@@ -164,5 +166,20 @@ public class CoreMotor : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.collider.CompareTag("Wall")) touchingWall = false;
+    }
+    public void SteerVelocityTowards(Vector2 direction, float maxDegrees)
+    {
+        if (direction.sqrMagnitude < 0.001f || Speed < 0.1f) return;
+
+        Vector2 currentDirection = rb.velocity.normalized;
+        Vector2 targetDirection = direction.normalized;
+
+        float currentAngle = Mathf.Atan2(currentDirection.y, currentDirection.x) * Mathf.Rad2Deg;
+        float targetAngle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+
+        float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, maxDegrees);
+        float radians = newAngle * Mathf.Deg2Rad;
+
+        rb.velocity = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * Speed;
     }
 }
