@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(CoreMotor))]
 [RequireComponent(typeof(CoreHealth))]
+[RequireComponent(typeof(CoreGuard))]
 public class CoreCombat : MonoBehaviour
 {
     [Header("碰撞伤害")]
@@ -10,14 +11,17 @@ public class CoreCombat : MonoBehaviour
 
     private CoreMotor motor;
     private CoreHealth health;
+    private CoreGuard guard;
 
     public CoreMotor Motor => motor;
     public CoreHealth Health => health;
+    public CoreGuard Guard => guard;
 
     private void Awake()
     {
         motor = GetComponent<CoreMotor>();
         health = GetComponent<CoreHealth>();
+        guard = GetComponent<CoreGuard>();
     }
 
     public float CalculateDamage(float attackSpeed)
@@ -31,7 +35,6 @@ public class CoreCombat : MonoBehaviour
         CoreCombat other = collision.collider.GetComponent<CoreCombat>();
         if (other == null || other == this) return;
         if (GetInstanceID() > other.GetInstanceID()) return;
-
         ImpactResolver.Resolve(this, other, collision);
     }
 }
