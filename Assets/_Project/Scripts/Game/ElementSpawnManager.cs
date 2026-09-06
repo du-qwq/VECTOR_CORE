@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class ElementSpawnManager : MonoBehaviour
 {
-    [Header("元素 Prefab")]
+    [Header("元素")]
     [SerializeField] private GameObject[] elementPrefabs;
 
     [Header("生成点")]
     [SerializeField] private Transform spawnPointRoot;
 
-    [Header("生成数量")]
+    [Header("数量")]
+    [SerializeField] private int initialElementCount = 5;
     [SerializeField] private int maxActiveElements = 5;
-    [SerializeField] private int initialElements = 5;
 
     [Header("刷新")]
     [SerializeField] private float respawnDelay = 2.5f;
@@ -19,12 +19,13 @@ public class ElementSpawnManager : MonoBehaviour
 
     [Header("空间检查")]
     [SerializeField] private float wallClearanceRadius = 0.45f;
+    [SerializeField] private LayerMask blockingLayers = ~0;
 
     private readonly List<ElementSpawnPoint> spawnPoints = new List<ElementSpawnPoint>();
     private readonly List<GameObject> activeElements = new List<GameObject>();
 
     private float nextSpawnTime;
-    private float respawnReadyTime;
+    private float respawnUnlockTime;
     private int lastPrefabIndex = -1;
 
     public int ActiveElementCount => activeElements.Count;
@@ -36,8 +37,8 @@ public class ElementSpawnManager : MonoBehaviour
 
     private void Start()
     {
-        int count = Mathf.Min(initialElements, maxActiveElements, spawnPoints.Count);
-        for (int i = 0; i < count; i++) SpawnOne();
+        int spawnCount = Mathf.Min(initialElementCount, maxActiveElements, spawnPoints.Count);
+        for (int i = 0; i < spawnCount; i++) SpawnOne();
     }
 
     private void Update()
@@ -45,7 +46,7 @@ public class ElementSpawnManager : MonoBehaviour
         CleanupActiveElements();
 
         if (activeElements.Count >= maxActiveElements) return;
-        if (Time.time < respawnReadyTime) return;
+        if (Time.time < respawnUnlockTime) return;
         if (Time.time < nextSpawnTime) return;
 
         if (SpawnOne()) nextSpawnTime = Time.time + spawnInterval;
@@ -57,25 +58,22 @@ public class ElementSpawnManager : MonoBehaviour
 
         if (spawnPointRoot == null)
         {
-            Debug.LogWarning($"{name}: Spawn Point Root 没有设置。", this);
+            Debug.LogWarning($"{name}：没有设置 Spawn Point Root。", this);
             return;
         }
 
-        ElementSpawnPoint[] points = spawnPointRoot.GetComponentsInChildren<ElementSpawnPoint>(true);
-        spawnPoints.AddRange(points);
+        spawnPoints.AddRange(spawnPointRoot.GetComponentsInChildren<ElementSpawnPoint>(true));
     }
 
     private bool SpawnOne()
     {
         if (elementPrefabs == null || elementPrefabs.Length == 0) return false;
-        if (spawnPoints.Count == 0) return false;
 
         List<ElementSpawnPoint> availablePoints = GetAvailableSpawnPoints();
         if (availablePoints.Count == 0) return false;
 
         ElementSpawnPoint point = availablePoints[Random.Range(0, availablePoints.Count)];
-        GameObject prefab = GetRandomElementPrefab();
-
+        GameObject prefab = GetRandomPrefab();
         if (prefab == null) return false;
 
         GameObject instance = Instantiate(prefab, point.transform.position, Quaternion.identity);
@@ -98,16 +96,16 @@ public class ElementSpawnManager : MonoBehaviour
         foreach (ElementSpawnPoint point in spawnPoints)
         {
             if (point == null || point.IsOccupied) continue;
-            if (IsBlockedByWall(point.Position)) continue;
+            if (IsBlocked(point.Position)) continue;
             result.Add(point);
         }
 
         return result;
     }
 
-    private bool IsBlockedByWall(Vector2 position)
+    private bool IsBlocked(Vector2 position)
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(position, wallClearanceRadius);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(position, wallClearanceRadius, blockingLayers);
 
         foreach (Collider2D hit in hits)
         {
@@ -117,12 +115,11 @@ public class ElementSpawnManager : MonoBehaviour
         return false;
     }
 
-    private GameObject GetRandomElementPrefab()
+    private GameObject GetRandomPrefab()
     {
         if (elementPrefabs.Length == 1) return elementPrefabs[0];
 
         int index = Random.Range(0, elementPrefabs.Length);
-
         for (int i = 0; i < 6 && index == lastPrefabIndex; i++) index = Random.Range(0, elementPrefabs.Length);
 
         lastPrefabIndex = index;
@@ -133,14 +130,13 @@ public class ElementSpawnManager : MonoBehaviour
     {
         for (int i = activeElements.Count - 1; i >= 0; i--)
         {
-            GameObject element = activeElements[i];
-            if (element == null || !element.activeInHierarchy) activeElements.RemoveAt(i);
+            if (activeElements[i] == null) activeElements.RemoveAt(i);
         }
     }
 
     public void NotifyElementRemoved(GameObject element)
     {
         activeElements.Remove(element);
-        respawnReadyTime = Mathf.Max(respawnReadyTime, Time.time + respawnDelay);
+        respawnUnlockTime = Mathf.Max(respawnUnlockTime, Time.time + respawnDelay);
     }
 }

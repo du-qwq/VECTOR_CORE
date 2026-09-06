@@ -13,11 +13,6 @@ public class ElementSpawnHandle : MonoBehaviour
         released = false;
     }
 
-    private void OnDisable()
-    {
-        Release();
-    }
-
     private void OnDestroy()
     {
         Release();

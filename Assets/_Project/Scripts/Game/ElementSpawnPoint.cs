@@ -2,11 +2,10 @@ using UnityEngine;
 
 public class ElementSpawnPoint : MonoBehaviour
 {
-    [Header("调试")]
     [SerializeField] private float gizmoRadius = 0.22f;
 
     public GameObject CurrentInstance { get; private set; }
-    public bool IsOccupied => CurrentInstance != null && CurrentInstance.activeInHierarchy;
+    public bool IsOccupied => CurrentInstance != null;
     public Vector2 Position => transform.position;
 
     public void SetInstance(GameObject instance)
