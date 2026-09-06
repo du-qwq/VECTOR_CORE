@@ -27,6 +27,7 @@ public class CoreGuard : MonoBehaviour
     private bool broken;
 
     public float CurrentGuard => currentGuard;
+    public float MaxGuard => maxGuard;
     public float NormalizedGuard => maxGuard <= 0f ? 0f : currentGuard / maxGuard;
     public bool IsBroken => broken;
     public bool IsGuarding => guardInput && !broken;
@@ -72,7 +73,14 @@ public class CoreGuard : MonoBehaviour
         if (damage <= 0f || broken) return;
         ApplyGuardDamage(damage);
     }
-    
+
+    public void RestoreGuard(float amount)
+    {
+        if (amount <= 0f || broken) return;
+        currentGuard = Mathf.Min(maxGuard, currentGuard + amount);
+        Debug.Log($"{name} STABILIZE：Guard +{amount:0}");
+    }
+
     private void ApplyGuardDamage(float damage)
     {
         currentGuard = Mathf.Max(0f, currentGuard - damage);
