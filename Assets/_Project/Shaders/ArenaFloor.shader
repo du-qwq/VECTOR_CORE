@@ -31,10 +31,6 @@ Shader "VECTOR_CORE/ArenaFloor"
         _CenterRingWidth("Center Ring Width", Range(0.01,0.2)) = 0.045
         _CenterTickLength("Center Tick Length", Float) = 0.45
         _CenterColor("Center Color", Color) = (0.25,0.34,0.42,0.5)
-
-        [Header(Structure Marks)]
-        _StructureWidth("Structure Line Width", Range(0.01,0.2)) = 0.04
-        _StructureColor("Structure Color", Color) = (0.20,0.27,0.34,0.42)
     }
 
     SubShader
@@ -76,27 +72,20 @@ Shader "VECTOR_CORE/ArenaFloor"
                 float4 _FrameColor;
                 float4 _AccentColor;
                 float4 _CenterColor;
-                float4 _StructureColor;
 
                 float _EdgeDarkening;
-
                 float _GridSpacing;
                 float _MajorSpacing;
                 float _MinorWidth;
                 float _MajorWidth;
-
                 float _FrameInset;
                 float _CornerCut;
                 float _FrameWidth;
-
                 float _MarkerLength;
                 float _MarkerWidth;
-
                 float _CenterRadius;
                 float _CenterRingWidth;
                 float _CenterTickLength;
-
-                float _StructureWidth;
             CBUFFER_END
 
             Varyings Vert(Attributes input)
@@ -155,7 +144,6 @@ Shader "VECTOR_CORE/ArenaFloor"
 
                 float frameDistance = SdChamferedRect(arenaPosition, halfSize, _CornerCut);
                 float frameAA = max(fwidth(frameDistance), 0.0005);
-
                 float insideArena = 1.0 - smoothstep(0.0, frameAA, frameDistance);
                 float frame = OutlineAA(frameDistance, _FrameWidth);
 
@@ -165,7 +153,6 @@ Shader "VECTOR_CORE/ArenaFloor"
                 float3 color = _BaseColor.rgb;
                 color = lerp(color, _MinorColor.rgb, minorGrid * _MinorColor.a);
                 color = lerp(color, _MajorColor.rgb, majorGrid * _MajorColor.a);
-
                 color *= lerp(0.62, 1.0, insideArena);
                 color = lerp(color, _FrameColor.rgb, frame * _FrameColor.a);
 
@@ -183,29 +170,13 @@ Shader "VECTOR_CORE/ArenaFloor"
                 float centerTickBottom = SdBox(arenaPosition - float2(0.0, -_CenterRadius), float2(0.035, _CenterTickLength * 0.5));
                 float centerTickLeft = SdBox(arenaPosition - float2(-_CenterRadius, 0.0), float2(_CenterTickLength * 0.5, 0.035));
                 float centerTickRight = SdBox(arenaPosition - float2(_CenterRadius, 0.0), float2(_CenterTickLength * 0.5, 0.035));
-
                 float centerTicks = max(max(FillAA(centerTickTop), FillAA(centerTickBottom)), max(FillAA(centerTickLeft), FillAA(centerTickRight)));
 
                 float centerHorizontal = FillAA(SdBox(arenaPosition, float2(0.35, 0.025)));
                 float centerVertical = FillAA(SdBox(arenaPosition, float2(0.025, 0.35)));
-
                 float centerMask = max(centerRing, max(centerTicks, max(centerHorizontal, centerVertical)));
+
                 color = lerp(color, _CenterColor.rgb, centerMask * _CenterColor.a);
-
-                float structureA = OutlineAA(SdBox(arenaPosition - float2(-8.2, 4.5), float2(2.1, 0.75)), _StructureWidth);
-                float structureB = OutlineAA(SdBox(arenaPosition - float2(8.7, 3.6), float2(0.75, 1.8)), _StructureWidth);
-                float structureC = OutlineAA(SdBox(arenaPosition - float2(-8.7, -3.8), float2(0.75, 1.65)), _StructureWidth);
-                float structureD = OutlineAA(SdBox(arenaPosition - float2(8.0, -4.6), float2(2.25, 0.7)), _StructureWidth);
-
-                float detailA = FillAA(SdBox(arenaPosition - float2(-6.0, 4.5), float2(0.35, 0.035)));
-                float detailB = FillAA(SdBox(arenaPosition - float2(8.7, 1.6), float2(0.035, 0.35)));
-                float detailC = FillAA(SdBox(arenaPosition - float2(-8.7, -5.65), float2(0.035, 0.35)));
-                float detailD = FillAA(SdBox(arenaPosition - float2(10.4, -4.6), float2(0.35, 0.035)));
-
-                float structureMask = max(max(structureA, structureB), max(structureC, structureD));
-                structureMask = max(structureMask, max(max(detailA, detailB), max(detailC, detailD)));
-
-                color = lerp(color, _StructureColor.rgb, structureMask * _StructureColor.a);
 
                 float2 edgeUV = abs(input.uv - 0.5) * 2.0;
                 float edge = smoothstep(0.72, 1.0, max(edgeUV.x, edgeUV.y));

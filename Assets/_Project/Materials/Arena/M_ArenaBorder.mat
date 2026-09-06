@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_ArenaModuleFlow
-  m_Shader: {fileID: 4800000, guid: aeb56721b7d6ae24ab0eb7cbe1aeb32f, type: 3}
+  m_Name: M_ArenaBorder
+  m_Shader: {fileID: 4800000, guid: 827f5d5911e30e94aa2c8fc3c85dc6f9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -83,14 +83,16 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _BaseAlpha: 0.25
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BorderDepth: 0.3
     - _BumpScale: 1
+    - _Chamfer: 0.75
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _CoreStrength: 1.25
-    - _CoreWidth: 0.028
+    - _CornerAccentAlpha: 0.55
+    - _CornerAccentLength: 0.65
+    - _CornerAccentWidth: 0.035
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
@@ -98,14 +100,16 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FlowOffset: 0
-    - _FlowSoftness: 0.07
+    - _FlowIntensity: 0.9
+    - _FlowLength: 0.12
+    - _FlowLineWidth: 0.05
+    - _FlowSoftness: 0.055
     - _FlowSpeed: 0.22
-    - _FlowStrength: 1.35
-    - _FlowWidth: 0.11
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _InnerLineInset: 0.18
+    - _InnerLineWidth: 0.035
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -117,16 +121,23 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _TickAlpha: 0.3
+    - _TickLength: 0.13
+    - _TickSpacing: 2
+    - _TickWidth: 0.025
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.15, g: 0.38, b: 0.44, a: 1}
+    - _ArenaSize: {r: 32, g: 18, b: 0, a: 0}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BorderColor: {r: 0.044999972, g: 0.07499998, b: 0.09999997, a: 0.85}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EdgeColor: {r: 0.16999996, g: 0.25999996, b: 0.31999996, a: 0.75}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlowColor: {r: 0.4, g: 0.91, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &8905591929993034308
+--- !u!114 &8698285305686987488
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

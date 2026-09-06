@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-1429418171866666830
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -7,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_ArenaModuleFlow
-  m_Shader: {fileID: 4800000, guid: aeb56721b7d6ae24ab0eb7cbe1aeb32f, type: 3}
+  m_Name: M_ArenaCenter
+  m_Shader: {fileID: 4800000, guid: 15688a216d578d241930095a51f86091, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -83,14 +96,15 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _BaseAlpha: 0.25
+    - _ArcAlpha: 0.5
+    - _ArcLength: 0.115
+    - _ArcRadius: 2.05
+    - _ArcWidth: 0.035
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _CoreStrength: 1.25
-    - _CoreWidth: 0.028
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
@@ -98,19 +112,26 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FlowOffset: 0
-    - _FlowSoftness: 0.07
-    - _FlowSpeed: 0.22
-    - _FlowStrength: 1.35
-    - _FlowWidth: 0.11
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _LocatorAlpha: 0.65
+    - _LocatorDotRadius: 0.035
+    - _LocatorRadius: 0.16
+    - _LocatorWidth: 0.025
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RingAlpha: 0.38
+    - _RingRadius: 1.55
+    - _RingWidth: 0.018
+    - _RotationSpeed: 0.012
+    - _SignalLength: 0.035
+    - _SignalSoftness: 0.012
+    - _SignalSpeed: 0.045
+    - _SignalStrength: 1.2
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -120,22 +141,10 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.15, g: 0.38, b: 0.44, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FlowColor: {r: 0.4, g: 0.91, b: 1, a: 1}
+    - _SignalColor: {r: 0.4, g: 0.91, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _StructureColor: {r: 0.16999996, g: 0.25999996, b: 0.31999996, a: 0.55}
   m_BuildTextureStacks: []
---- !u!114 &8905591929993034308
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 7

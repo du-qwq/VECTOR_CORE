@@ -17,7 +17,7 @@ public class ArenaModule2D : MonoBehaviour
     [Header("模块类型")]
     [SerializeField] private ModuleShape shape = ModuleShape.Straight;
 
-    [Header("通用")]
+    [Header("通用尺寸")]
     [SerializeField] private float width = 3f;
     [SerializeField] private float height = 0.65f;
 
@@ -30,20 +30,36 @@ public class ArenaModule2D : MonoBehaviour
     [Range(20f, 180f)] [SerializeField] private float arcAngle = 90f;
     [Range(6, 48)] [SerializeField] private int arcSegments = 24;
 
-    [Header("视觉线条")]
+    [Header("线条")]
     [SerializeField] private LineRenderer outlineLine;
     [SerializeField] private LineRenderer flowLine;
     [SerializeField] private float outlineWidth = 0.035f;
     [SerializeField] private float flowWidth = 0.055f;
 
+    [Header("流光路径")]
+    [SerializeField] private bool oppositeFlowEdge;
+    [SerializeField] private float flowInset = 0.10f;
+
+    [Header("流光动画")]
+    [Range(0f, 1f)] [SerializeField] private float flowOffset;
+    [SerializeField] private float flowSpeed = 0.22f;
+    [SerializeField] private float flowStrength = 1.35f;
+    [SerializeField] private bool reverseFlow;
+
+    private static readonly int FlowOffsetID = Shader.PropertyToID("_FlowOffset");
+    private static readonly int FlowSpeedID = Shader.PropertyToID("_FlowSpeed");
+    private static readonly int FlowStrengthID = Shader.PropertyToID("_FlowStrength");
+
     private MeshFilter meshFilter;
     private PolygonCollider2D polygonCollider;
     private Mesh generatedMesh;
+    private MaterialPropertyBlock flowPropertyBlock;
 
     private void OnEnable()
     {
         CacheComponents();
         EnsureMesh();
+        EnsurePropertyBlock();
         Rebuild();
     }
 
@@ -54,10 +70,17 @@ public class ArenaModule2D : MonoBehaviour
         arcRadius = Mathf.Max(0.2f, arcRadius);
         arcThickness = Mathf.Clamp(arcThickness, 0.05f, arcRadius * 1.8f);
         arcSegments = Mathf.Clamp(arcSegments, 6, 48);
+        flowInset = Mathf.Max(0f, flowInset);
 
         CacheComponents();
         EnsureMesh();
+        EnsurePropertyBlock();
         Rebuild();
+    }
+
+    private void Update()
+    {
+        if (!Application.isPlaying) ApplyFlowProperties();
     }
 
     private void CacheComponents()
@@ -70,12 +93,13 @@ public class ArenaModule2D : MonoBehaviour
     {
         if (generatedMesh != null) return;
 
-        generatedMesh = new Mesh
-        {
-            name = "ArenaModule_GeneratedMesh"
-        };
-
+        generatedMesh = new Mesh { name = "ArenaModule_GeneratedMesh" };
         meshFilter.sharedMesh = generatedMesh;
+    }
+
+    private void EnsurePropertyBlock()
+    {
+        if (flowPropertyBlock == null) flowPropertyBlock = new MaterialPropertyBlock();
     }
 
     private void Rebuild()
@@ -99,18 +123,14 @@ public class ArenaModule2D : MonoBehaviour
 
         SetupLineRenderer(outlineLine, outlineWidth, true);
         SetupLineRenderer(flowLine, flowWidth, false);
+        ApplyFlowProperties();
     }
 
     private void BuildStraight()
     {
         float halfWidth = width * 0.5f;
         float halfHeight = height * 0.5f;
-
-        float cut = Mathf.Min(
-            cornerCut,
-            halfWidth * 0.45f,
-            halfHeight * 0.45f
-        );
+        float cut = Mathf.Min(cornerCut, halfWidth * 0.45f, halfHeight * 0.45f);
 
         Vector2[] points =
         {
@@ -128,10 +148,12 @@ public class ArenaModule2D : MonoBehaviour
         ApplyCollider(points);
         ApplyOutline(points);
 
+        float edgeY = oppositeFlowEdge ? -halfHeight + flowInset : halfHeight - flowInset;
+
         Vector2[] flowPoints =
         {
-            new Vector2(-halfWidth + cut * 2f, 0f),
-            new Vector2( halfWidth - cut * 2f, 0f)
+            new Vector2(-halfWidth + cut * 1.8f, edgeY),
+            new Vector2( halfWidth - cut * 1.8f, edgeY)
         };
 
         ApplyFlow(flowPoints);
@@ -154,13 +176,21 @@ public class ArenaModule2D : MonoBehaviour
         ApplyCollider(points);
         ApplyOutline(points);
 
-        Vector2[] flowPoints =
-        {
-            new Vector2(-halfWidth * 0.8f, 0f),
-            new Vector2( halfWidth * 0.8f, 0f)
-        };
+        Vector2 start;
+        Vector2 end;
 
-        ApplyFlow(flowPoints);
+        if (!oppositeFlowEdge)
+        {
+            start = new Vector2(-halfWidth + flowInset, halfHeight * 0.32f - flowInset * 0.25f);
+            end = new Vector2(halfWidth - flowInset, halfHeight - flowInset);
+        }
+        else
+        {
+            start = new Vector2(-halfWidth + flowInset, -halfHeight * 0.32f + flowInset * 0.25f);
+            end = new Vector2(halfWidth - flowInset, -halfHeight + flowInset);
+        }
+
+        ApplyFlow(new[] { start, end });
     }
 
     private void BuildArc()
@@ -176,20 +206,20 @@ public class ArenaModule2D : MonoBehaviour
         List<Vector2> colliderPoints = new List<Vector2>();
         List<Vector2> flowPoints = new List<Vector2>();
 
+        float flowRadius = oppositeFlowEdge ? innerRadius + flowInset : outerRadius - flowInset;
+        flowRadius = Mathf.Clamp(flowRadius, innerRadius + 0.02f, outerRadius - 0.02f);
+
         for (int i = 0; i <= arcSegments; i++)
         {
             float t = i / (float)arcSegments;
-            float angle = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
+            float radians = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
 
-            Vector2 direction = new Vector2(
-                Mathf.Cos(angle),
-                Mathf.Sin(angle)
-            );
+            Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
 
             vertices.Add(direction * outerRadius);
             vertices.Add(direction * innerRadius);
 
-            flowPoints.Add(direction * arcRadius);
+            flowPoints.Add(direction * flowRadius);
         }
 
         for (int i = 0; i < arcSegments; i++)
@@ -208,23 +238,15 @@ public class ArenaModule2D : MonoBehaviour
         for (int i = 0; i <= arcSegments; i++)
         {
             float t = i / (float)arcSegments;
-            float angle = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
-
-            colliderPoints.Add(new Vector2(
-                Mathf.Cos(angle),
-                Mathf.Sin(angle)
-            ) * outerRadius);
+            float radians = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
+            colliderPoints.Add(new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * outerRadius);
         }
 
         for (int i = arcSegments; i >= 0; i--)
         {
             float t = i / (float)arcSegments;
-            float angle = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
-
-            colliderPoints.Add(new Vector2(
-                Mathf.Cos(angle),
-                Mathf.Sin(angle)
-            ) * innerRadius);
+            float radians = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
+            colliderPoints.Add(new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * innerRadius);
         }
 
         generatedMesh.Clear();
@@ -241,17 +263,9 @@ public class ArenaModule2D : MonoBehaviour
     {
         Vector3[] vertices = new Vector3[points.Length];
 
-        for (int i = 0; i < points.Length; i++)
-        {
-            vertices[i] = new Vector3(
-                points[i].x,
-                points[i].y,
-                0f
-            );
-        }
+        for (int i = 0; i < points.Length; i++) vertices[i] = new Vector3(points[i].x, points[i].y, 0f);
 
         int[] triangles = new int[(points.Length - 2) * 3];
-
         int triangleIndex = 0;
 
         for (int i = 1; i < points.Length - 1; i++)
@@ -279,14 +293,7 @@ public class ArenaModule2D : MonoBehaviour
 
         Vector3[] positions = new Vector3[points.Length];
 
-        for (int i = 0; i < points.Length; i++)
-        {
-            positions[i] = new Vector3(
-                points[i].x,
-                points[i].y,
-                -0.01f
-            );
-        }
+        for (int i = 0; i < points.Length; i++) positions[i] = new Vector3(points[i].x, points[i].y, -0.01f);
 
         outlineLine.positionCount = positions.Length;
         outlineLine.SetPositions(positions);
@@ -299,18 +306,37 @@ public class ArenaModule2D : MonoBehaviour
 
         Vector3[] positions = new Vector3[points.Length];
 
-        for (int i = 0; i < points.Length; i++)
+        if (!reverseFlow)
         {
-            positions[i] = new Vector3(
-                points[i].x,
-                points[i].y,
-                -0.02f
-            );
+            for (int i = 0; i < points.Length; i++) positions[i] = new Vector3(points[i].x, points[i].y, -0.02f);
+        }
+        else
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                Vector2 point = points[points.Length - 1 - i];
+                positions[i] = new Vector3(point.x, point.y, -0.02f);
+            }
         }
 
         flowLine.positionCount = positions.Length;
         flowLine.SetPositions(positions);
         flowLine.loop = false;
+    }
+
+    private void ApplyFlowProperties()
+    {
+        if (flowLine == null) return;
+
+        EnsurePropertyBlock();
+
+        flowLine.GetPropertyBlock(flowPropertyBlock);
+
+        flowPropertyBlock.SetFloat(FlowOffsetID, flowOffset);
+        flowPropertyBlock.SetFloat(FlowSpeedID, Mathf.Abs(flowSpeed));
+        flowPropertyBlock.SetFloat(FlowStrengthID, flowStrength);
+
+        flowLine.SetPropertyBlock(flowPropertyBlock);
     }
 
     private void SetupLineRenderer(LineRenderer line, float lineWidth, bool loop)
@@ -323,7 +349,7 @@ public class ArenaModule2D : MonoBehaviour
         line.widthMultiplier = lineWidth;
         line.loop = loop;
 
-        line.numCornerVertices = 2;
-        line.numCapVertices = 2;
+        line.numCornerVertices = 0;
+        line.numCapVertices = loop ? 0 : 2;
     }
 }

@@ -145,7 +145,7 @@ Material:
     - _AccentColor: {r: 0.19, g: 0.84, b: 1, a: 0.9}
     - _ArenaSize: {r: 32, g: 18, b: 0, a: 0}
     - _BaseColor: {r: 0.02745098, g: 0.039215688, b: 0.058823504, a: 1}
-    - _CenterColor: {r: 0.24999997, g: 0.33999997, b: 0.41999996, a: 0.5}
+    - _CenterColor: {r: 0, g: 0, b: 0, a: 0.5}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FrameColor: {r: 0.31999996, g: 0.38999996, b: 0.4699999, a: 0.55}
